@@ -1,251 +1,747 @@
-JS Fundamentals Assignment — Section A Answers
-A1. Difference between var, let, and const
+A1. What is the Difference Between var, let, and const in JavaScript?
+
+JavaScript provides three keywords for declaring variables: var, let, and const. Although all three are used to store data, they differ in terms of scope, hoisting, reassignment, and redeclaration rules.
+
 1. Scope
 
-var is function-scoped. If declared inside a function, it's only available inside that function — but if declared inside a block (like an if or for), it "leaks" outside the block.
-let and const are block-scoped. They only exist inside the { } block where they're declared.
+Scope determines where a variable can be accessed in a program.
+
+var
+
+var is function-scoped. If it is declared inside a function, it can be accessed anywhere within that function. However, if declared inside a block such as an if statement or loop, it can still be accessed outside that block.
+
 function test() {
-  if (true) {
-    var x = 1;
-    let y = 2;
-  }
-  console.log(x); // 1  (var leaked out of the if-block)
-  console.log(y); // ReferenceError (y is block-scoped)
+    if (true) {
+        var x = 10;
+    }
+    console.log(x); // 10
+}
+let and const
+
+let and const are block-scoped. They can only be accessed inside the block in which they are declared.
+
+function test() {
+    if (true) {
+        let y = 20;
+        const z = 30;
+    }
+
+    console.log(y); // Error
+    console.log(z); // Error
 }
 2. Hoisting
 
-All three are "hoisted" — meaning JavaScript registers the variable name in memory before the code runs.
-var is hoisted and initialized with undefined. So if you access it before the line where it's declared, you get undefined, not an error.
-let and const are hoisted but NOT initialized. They sit in a "Temporal Dead Zone" until their declaration line runs.
+Hoisting is JavaScript's behavior of moving declarations to the top of their scope before execution.
+
+var Hoisting
+console.log(a);
+var a = 10;
+
+Output:
+
+undefined
+
+The variable is hoisted and automatically initialized with undefined.
+
+let and const Hoisting
+console.log(b);
+let b = 20;
+
+Output:
+
+ReferenceError
+
+let and const are also hoisted, but they are not initialized immediately.
+
+Important Interview Question
+
+Is let hoisted?
+
+Yes. Many people incorrectly say "No."
+
+The correct answer is:
+
+let and const are hoisted, but they remain in the Temporal Dead Zone (TDZ) until execution reaches their declaration.
+
 3. Temporal Dead Zone (TDZ)
 
-TDZ is the time between the start of the block and the line where let/const is actually declared.
-During this time, the variable exists (it's hoisted) but cannot be accessed — doing so throws a ReferenceError.
-var has no TDZ — it's just undefined until assigned.
-Important interview point: let IS hoisted — just hoisted to the TDZ, not to undefined. Saying "let is not hoisted" is technically wrong.
-console.log(a); // undefined
-console.log(b); // ReferenceError: Cannot access 'b' before initialization
-var a = 10;
-let b = 20;
+The TDZ is the period between entering a scope and the actual declaration of a let or const variable.
+
+During this period, accessing the variable causes a ReferenceError.
+
+{
+    console.log(x);
+    let x = 10;
+}
+
+Output:
+
+ReferenceError
+
+var does not have a TDZ because it is initialized with undefined.
+
 4. Re-declaration and Re-assignment
-
-Keyword	Re-declare in same scope?	Re-assign value?
+Keyword	Re-declaration	Re-assignment
 var	Allowed	Allowed
-let	SyntaxError	Allowed
-const	SyntaxError	TypeError
-Note: const doesn't make the value immutable — it makes the binding immutable. You can still mutate properties of a const object/array, just not reassign the variable itself.
+let	Not Allowed	Allowed
+const	Not Allowed	Not Allowed
+Example
+var a = 10;
+var a = 20; // Allowed
 
-5. Which to use in modern JavaScript?
+let b = 10;
+b = 20; // Allowed
 
-Use const by default — it signals "this binding won't change," making code easier to reason about.
-Use let only when you know the variable needs to be reassigned (counters, loop variables, accumulators).
-Avoid var entirely — its function-scoping and lack of TDZ cause subtle bugs (especially in loops and closures).
-A2. What is the V8 Engine? What does "single-threaded" mean?
-1. What is V8? V8 is Google's open-source JavaScript engine, written in C++. It's the engine that powers:
+const c = 10;
+c = 20; // Error
+5. Which One Should Be Used?
 
-Google Chrome (and other browsers like Edge, Brave)
-Node.js — which embeds V8 to run JavaScript outside the browser
-2. JIT (Just-In-Time) Compilation In simple terms: instead of slowly interpreting JS code line-by-line every time (like old engines did), V8:
+Modern JavaScript developers follow these rules:
 
-First quickly interprets the code so it starts running fast.
-While running, it watches which functions are used a lot ("hot" functions).
-It then compiles those hot functions into optimized machine code on the fly, so they run much faster the next time.
-This gives JS both fast startup AND fast execution — best of both worlds (interpreter + compiler).
+Use const by default
+const pi = 3.14;
 
-3. What does "single-threaded" mean? JavaScript has one call stack and can do only one thing at a time. There's no running two pieces of JS code simultaneously in the same context — each statement must finish (or yield) before the next one starts.
+It prevents accidental reassignment and makes code easier to understand.
 
-4. If JS is single-threaded, how does it handle async tasks (setTimeout, fetch)? JS itself doesn't "wait." Instead:
+Use let when the value changes
+let count = 0;
+count++;
+Avoid var
 
-The async operation (timer, network request) is handed off to the Web APIs (browser) or libuv (Node) — which run outside the JS thread.
-When that operation finishes, its callback is placed into the Callback Queue (or microtask queue for Promises).
-The Event Loop constantly checks: "Is the call stack empty? If yes, take the next item from the queue and push it onto the stack to run."
-This is how JS feels like it's doing many things at once, while actually only ever running one piece of JS code at a time.
+var can cause unexpected bugs because of function scope and hoisting behavior.
 
-5. The Pipeline (briefly) Call Stack → executes your synchronous code, one frame at a time Web APIs / libuv → handle timers, I/O, network requests in the background Callback Queue / Microtask Queue → holds completed callbacks waiting to run Event Loop → moves callbacks from the queue to the call stack when it's empty
+Conclusion
+var is function-scoped, hoisted with undefined, and allows redeclaration.
+let is block-scoped, hoisted into the TDZ, and allows reassignment but not redeclaration.
+const is block-scoped, hoisted into the TDZ, and does not allow reassignment.
+Modern JavaScript primarily uses const and let, while var is generally avoided.
+A2. What is the V8 Engine? What Does It Mean That JavaScript Is Single-Threaded?
+1. What is V8?
 
-Follow-up: Is Node.js single-threaded too? The JavaScript execution thread is single-threaded — your JS code runs on one main thread. But Node.js uses libuv, a C++ library with its own thread pool, to handle file system operations, DNS lookups, and some crypto operations in parallel, behind the scenes. So: JS code = single-threaded, but Node's I/O underneath = multi-threaded.
+V8 is Google's open-source JavaScript engine written in C++.
 
-A3. The 8 JavaScript Data Types & Type Coercion
-1. The 8 Types
+It is responsible for executing JavaScript code.
 
-Primitives (7):
+Environments That Use V8
+Google Chrome
+Microsoft Edge
+Brave Browser
+Opera Browser
+Node.js
 
-Number — e.g. 42, 3.14
-String — e.g. "hello"
-Boolean — true / false
-undefined — a variable declared but not assigned a value
-null — represents "intentionally empty"
-Symbol — unique, immutable identifier (ES6+)
-BigInt — for integers larger than Number can safely hold
-Non-Primitive (1): 8. Object — includes plain objects, arrays, functions, dates, etc. (all "object" under the hood)
+Without V8, JavaScript code would not run in these environments.
 
-2. The typeof null === 'object' bug
+2. What is JIT (Just-In-Time) Compilation?
 
-console.log(typeof null); // 'object'
-This is a bug from JavaScript's very first version (1995). null is logically a primitive (it means "no value"), but due to how values were represented internally in early JS, null got tagged with the same internal type code as objects. By the time anyone noticed, too much code already depended on this behavior, so it was never fixed — fixing it would break the web. It remains one of JS's most famous historical quirks.
+Older JavaScript engines interpreted code line by line.
 
-3. Implicit Coercion (JS converts types automatically, silently)
+V8 uses Just-In-Time (JIT) Compilation.
 
-Example 1 — string + number with +:
+How It Works
+JavaScript code is read.
+V8 quickly interprets the code.
+Frequently used functions are identified.
+Those functions are converted into optimized machine code.
 
-console.log("5" + 1); // "51"  (number 1 is converted to string, then concatenated)
-Example 2 — using == with different types:
+This allows JavaScript to start quickly and run efficiently.
 
-console.log("5" == 5); // true  (string "5" is coerced to number 5 before comparing)
-Example 3 — using a value in a boolean context (if condition):
+Example
+function add(a, b) {
+    return a + b;
+}
 
-if ("hello") { console.log("truthy!"); } // runs — non-empty string is truthy
-4. Explicit Coercion (you intentionally convert types)
+for(let i = 0; i < 1000000; i++) {
+    add(5, 10);
+}
 
-Number("123");     // 123        — string to number
-String(123);       // "123"      — number to string
-Boolean(0);        // false      — number to boolean
-Boolean("");       // false      — empty string to boolean
-5. Why == is dangerous and === is safe
+Since the function runs many times, V8 optimizes it into machine code.
 
-== (loose equality) coerces types before comparing, leading to confusing results:
-console.log(0 == "");        // true
-console.log(0 == "0");       // true
-console.log("" == "0");      // false  ← inconsistent!
-console.log(null == undefined); // true
-console.log(false == "0");   // true
-=== (strict equality) checks both value AND type — no conversion happens. This makes behavior predictable.
-console.log(0 === "");  // false
-console.log(0 === 0);   // true
-Rule of thumb: always use === and !== unless you have a very specific, well-understood reason to use ==.
+3. What Does Single-Threaded Mean?
 
-A4. Primitive vs Non-Primitive (Reference) Types
-1. Primitive Types — stored in the Stack Number, String, Boolean, undefined, null, Symbol, BigInt
+JavaScript is called single-threaded because it has only one call stack.
 
-These are stored directly in the stack memory (the fast, small memory used for variable storage), as actual values.
+This means JavaScript can execute only one task at a time.
 
-2. Non-Primitive Types — stored in the Heap Object, Array, Function, Date, etc.
+Example
+console.log("First");
+console.log("Second");
+console.log("Third");
 
-For these, the actual data lives in the Heap (a larger memory area for dynamic data). The variable in the stack only holds a reference (address/pointer) to where the data lives in the heap.
+Output:
 
-3. Copying a primitive variable When you copy a primitive, JS copies the actual value. The two variables become completely independent.
+First
+Second
+Third
+
+Each statement must finish before the next one starts.
+
+4. If JavaScript Is Single-Threaded, How Does It Handle Async Tasks?
+
+JavaScript uses the Event Loop architecture.
+
+Components
+Call Stack
+
+Executes JavaScript code.
+
+Web APIs
+
+Provided by browsers for handling timers, network requests, DOM events, etc.
+
+Callback Queue
+
+Stores completed callbacks waiting to execute.
+
+Event Loop
+
+Checks whether the Call Stack is empty and moves callbacks into it.
+
+Example
+console.log("Start");
+
+setTimeout(() => {
+    console.log("Timer Done");
+}, 2000);
+
+console.log("End");
+
+Output:
+
+Start
+End
+Timer Done
+Why?
+"Start" is printed.
+setTimeout is sent to Web APIs.
+"End" is printed.
+After 2 seconds, callback enters Callback Queue.
+Event Loop moves it to Call Stack.
+"Timer Done" is printed.
+5. JavaScript Execution Flow
+Call Stack
+      ↓
+Web APIs
+      ↓
+Callback Queue
+      ↓
+Event Loop
+      ↓
+Call Stack
+
+This process enables asynchronous programming.
+
+6. Is Node.js Also Single-Threaded?
+
+This is a common interview question.
+
+Answer
+
+JavaScript execution inside Node.js is single-threaded because it uses one Call Stack.
+
+However, Node.js uses libuv, a C++ library that provides a multi-threaded thread pool for handling:
+
+File system operations
+Network requests
+DNS lookups
+Cryptography operations
+
+Therefore:
+
+JavaScript code → Single-threaded
+Underlying I/O operations → Multi-threaded through libuv
+A3. Explain the 8 JavaScript Data Types. What is Type Coercion – Implicit vs Explicit?
+
+JavaScript is a dynamically typed language, which means variables can hold different types of values without explicitly specifying their data type. JavaScript has 8 data types, consisting of 7 primitive types and 1 non-primitive type.
+
+1. The 8 JavaScript Data Types
+Primitive Data Types (7)
+
+Primitive data types store a single value and are immutable.
+
+1. Number
+
+Used for integers and floating-point numbers.
+
+let age = 20;
+let price = 99.99;
+2. String
+
+Used to store text.
+
+let name = "Ali";
+3. Boolean
+
+Represents true or false values.
+
+let isLoggedIn = true;
+4. Undefined
+
+A variable declared but not assigned a value.
+
+let x;
+console.log(x); // undefined
+5. Null
+
+Represents an intentionally empty value.
+
+let user = null;
+6. Symbol
+
+Used to create unique identifiers.
+
+let id = Symbol("id");
+7. BigInt
+
+Used for very large integers beyond the safe limit of Number.
+
+let bigNumber = 12345678901234567890n;
+Non-Primitive Data Type (1)
+8. Object
+
+Objects store collections of data.
+
+let person = {
+    name: "Ali",
+    age: 22
+};
+
+Arrays, functions, and dates are also objects in JavaScript.
+
+2. The Famous typeof null === "object" Bug
+console.log(typeof null);
+
+Output:
+
+"object"
+
+This is a historical bug from JavaScript's first version in 1995.
+
+Although null is a primitive value representing "no value," it was mistakenly assigned the internal type code used for objects. By the time this issue was discovered, many websites relied on this behavior, so it was never fixed to maintain backward compatibility.
+
+3. Type Coercion
+
+Type coercion is the automatic or manual conversion of one data type into another.
+
+There are two types:
+
+Implicit Coercion
+
+JavaScript automatically converts data types when needed.
+
+Example 1
+console.log("5" + 1);
+
+Output:
+
+"51"
+
+The number 1 is converted into a string and concatenated.
+
+Example 2
+console.log("5" == 5);
+
+Output:
+
+true
+
+JavaScript converts "5" into the number 5 before comparison.
+
+Example 3
+if ("Hello") {
+    console.log("Truthy");
+}
+
+Output:
+
+Truthy
+
+A non-empty string is automatically converted to true.
+
+4. Explicit Coercion
+
+Explicit coercion occurs when the programmer intentionally converts a value.
+
+Number()
+Number("123");
+
+Output:
+
+123
+String()
+String(123);
+
+Output:
+
+"123"
+Boolean()
+Boolean(1);
+
+Output:
+
+true
+5. Why == Is Dangerous and === Is Safe
+Loose Equality (==)
+
+== performs type coercion before comparison.
+
+console.log(0 == "");
+
+Output:
+
+true
+console.log(false == "0");
+
+Output:
+
+true
+
+These results can be confusing.
+
+Strict Equality (===)
+
+=== compares both value and data type.
+
+console.log(0 === "");
+
+Output:
+
+false
+console.log(5 === 5);
+
+Output:
+
+true
+Best Practice
+
+Always use === and !== unless there is a specific reason to use ==.
+
+Conclusion
+
+JavaScript has eight data types: seven primitive types and one non-primitive type. Type coercion can occur automatically (implicit) or manually (explicit). Developers should understand coercion behavior and prefer strict equality (===) for predictable results.
+
+A4. Primitive vs Non-Primitive Data Types in JavaScript
+
+JavaScript data types are divided into two categories: Primitive and Non-Primitive (Reference) types. They differ in how they are stored in memory and copied.
+
+1. Primitive Data Types
+
+Primitive types include:
+
+Number
+String
+Boolean
+Undefined
+Null
+Symbol
+BigInt
+Storage
+
+Primitive values are stored directly in Stack Memory.
+
+let age = 20;
+
+The actual value 20 is stored directly in memory.
+
+2. Non-Primitive Data Types
+
+Non-primitive types include:
+
+Object
+Array
+Function
+Date
+Storage
+
+These are stored in Heap Memory.
+
+The variable stores only a reference (memory address) to the object.
+
+let person = {
+    name: "Ali"
+};
+3. Copying Primitive Values
+
+When a primitive value is copied, the actual value is duplicated.
 
 let a = 10;
-let b = a;  // b gets its own copy of the value 10
+let b = a;
+
 b = 20;
-console.log(a); // 10 — unaffected
+
+console.log(a); // 10
 console.log(b); // 20
-4. Copying a reference (object/array) variable When you copy an object/array, JS copies the reference (address), NOT the actual data. Both variables now point to the same object in the heap.
 
-let obj1 = { name: "Asad" };
-let obj2 = obj1;  // obj2 points to the SAME object as obj1
-obj2.name = "Ali";
-console.log(obj1.name); // "Ali" — changed too! Same object in memory.
-5. Code example: mutation through a copied reference
+Changing b does not affect a.
 
-const original = { score: 100 };
-const copy = original;       // copy is just another name for the same object
+4. Copying Reference Values
 
-copy.score = 50;              // mutating through 'copy'
+When an object or array is copied, only the reference is copied.
 
-console.log(original.score);  // 50 — original is affected!
-Are arrays primitive or non-primitive? Arrays are non-primitive — technically, arrays ARE objects in JS (typeof [] === 'object'). They're stored in the heap and copied by reference, just like any object.
+let obj1 = {
+    name: "Ali"
+};
 
-A5. Pass by Value vs Pass by Reference
-1. Passing a primitive to a function The function receives a copy of the value. Changes inside the function do NOT affect the original variable.
+let obj2 = obj1;
+
+obj2.name = "Ahmed";
+
+console.log(obj1.name);
+
+Output:
+
+Ahmed
+
+Both variables point to the same object.
+
+5. Mutation Example
+const original = {
+    score: 100
+};
+
+const copy = original;
+
+copy.score = 50;
+
+console.log(original.score);
+
+Output:
+
+50
+
+The original object changes because both variables reference the same memory location.
+
+Interview Question
+Are Arrays Primitive or Non-Primitive?
+
+Arrays are non-primitive because arrays are objects in JavaScript.
+
+console.log(typeof []);
+
+Output:
+
+object
+Conclusion
+
+Primitive values are stored in the stack and copied by value. Non-primitive values are stored in the heap and copied by reference. Understanding this difference helps prevent unexpected behavior when working with objects and arrays.
+
+A5. Pass By Value vs Pass By Reference
+
+Pass by value and pass by reference describe how data is passed into functions.
+
+1. Pass By Value
+
+When a primitive value is passed to a function, a copy of the value is passed.
 
 function changeValue(x) {
-  x = 100;
-  console.log("inside function:", x); // 100
+    x = 100;
 }
 
 let num = 10;
+
 changeValue(num);
-console.log("outside function:", num); // 10 — unchanged
-2. Passing an object to a function The function receives a copy of the reference (the address pointing to the object). Both the original variable and the parameter point to the SAME object in the heap.
+
+console.log(num);
+
+Output:
+
+10
+
+The original variable remains unchanged.
+
+2. Passing Objects
+
+Objects behave differently because a reference is passed.
 
 function changeName(person) {
-  person.name = "Changed";
+    person.name = "Ahmed";
 }
 
-const user = { name: "Original" };
+const user = {
+    name: "Ali"
+};
+
 changeName(user);
-console.log(user.name); // "Changed" — original object was mutated
-3. The key nuance: "the reference is passed by value" This means: the address (reference) itself is copied into the function's parameter — like copying a house's address onto a piece of paper. You get your OWN copy of the address, but that address still points to the SAME house.
 
-If you use that address to walk into the house and change something (person.name = "X") → the original house is changed (mutation).
-If you write a NEW address on your paper (person = {...} — reassignment) → your paper now points elsewhere, but the original paper (variable) still has the old address.
-4. Proof: reassigning obj inside a function does NOT change the original
+console.log(user.name);
 
+Output:
+
+Ahmed
+
+The original object is modified.
+
+3. The Important Concept: Reference Passed By Value
+
+JavaScript is technically pass by value.
+
+For objects, the value being copied is the memory address (reference).
+
+Therefore:
+
+The reference is copied.
+Both variables point to the same object.
+4. Reassigning Does NOT Affect Original
 function reassign(obj) {
-  obj = { name: "Brand New Object" }; // obj now points to a NEW object
-  console.log("inside:", obj.name);   // "Brand New Object"
+    obj = {
+        name: "New Object"
+    };
 }
 
-const original = { name: "Original" };
+const original = {
+    name: "Ali"
+};
+
 reassign(original);
-console.log("outside:", original.name); // "Original" — unchanged!
-5. But mutating obj.property DOES affect the original
 
+console.log(original.name);
+
+Output:
+
+Ali
+
+The original object remains unchanged.
+
+5. Mutating DOES Affect Original
 function mutate(obj) {
-  obj.name = "Mutated"; // changes the property on the SAME object
+    obj.name = "Changed";
 }
 
-const original2 = { name: "Original" };
-mutate(original2);
-console.log(original2.name); // "Mutated" — changed!
-Summary: JavaScript is technically "pass by value" — but the value being passed, for objects, is a reference (memory address). So: reassignment inside a function never escapes the function, but mutation of properties does affect the original object.
+const user = {
+    name: "Ali"
+};
+
+mutate(user);
+
+console.log(user.name);
+
+Output:
+
+Changed
+
+Because both references point to the same object.
+
+Conclusion
+
+JavaScript is not truly pass-by-reference. It is pass-by-value, but when objects are passed, the value copied is the object's reference. Therefore, property mutations affect the original object, while reassignment does not.
 
 A6. Functions in JavaScript
-1. What problem do functions solve? Functions let us wrap reusable blocks of logic so we don't repeat code. Instead of writing the same calculation 10 times, we write it once as a function and "call" it whenever needed — making code shorter, organized, and easier to fix (fix once, works everywhere).
 
+A function is a reusable block of code designed to perform a specific task. Functions help avoid code repetition and make programs more organized and maintainable.
+
+1. What Problem Do Functions Solve?
+
+Without functions, the same code would need to be written multiple times.
+
+Functions promote:
+
+Code reusability
+Better organization
+Easier maintenance
+Reduced duplication
 2. Function Declaration Syntax
-
 function functionName(parameter1, parameter2) {
-  // code to run
-  return result;
+    return result;
 }
-Example:
-
+Example
 function add(a, b) {
-  return a + b;
+    return a + b;
 }
-3. Is a function declaration hoisted? Can you call it before it's defined? Yes! Function declarations are fully hoisted — both the name AND the function body are moved to the top of their scope. This means you CAN call a function declaration before the line where it's written in the code.
+3. Function Hoisting
 
-sayHello(); // works! prints "Hello"
+Function declarations are fully hoisted.
+
+This means they can be called before their definition.
+
+sayHello();
 
 function sayHello() {
-  console.log("Hello");
+    console.log("Hello");
 }
-(Note: this is different from function expressions — const sayHi = function() {...} — which behave like var/let variables and are NOT callable before their assignment line.)
 
+Output:
+
+Hello
 4. Parameter vs Argument
+Parameter
 
-A parameter is the placeholder name listed in the function definition.
-An argument is the actual value you pass in when calling the function.
-function greet(name) {  // 'name' is the PARAMETER
-  console.log("Hi " + name);
+A parameter is a variable listed in the function definition.
+
+function greet(name) {
 }
 
-greet("Asad"); // "Asad" is the ARGUMENT
-5. What does a function return if no return statement is written? It returns undefined automatically.
+name is a parameter.
 
-function doNothing() {
-  let x = 5; // no return
+Argument
+
+An argument is the actual value passed during function call.
+
+greet("Ali");
+
+"Ali" is an argument.
+
+5. Return Values
+
+If no return statement is written, JavaScript automatically returns undefined.
+
+function test() {
+    let x = 10;
 }
-console.log(doNothing()); // undefined
-6. Real-world example: validating a user's age
 
+console.log(test());
+
+Output:
+
+undefined
+6. Real-World Example: Age Validation
 function validateAge(age) {
-  if (typeof age !== "number") {
-    return "Age must be a number";
-  }
-  if (age < 18) {
-    return "You must be 18 or older";
-  }
-  if (age > 120) {
-    return "Please enter a valid age";
-  }
-  return "Age is valid";
+    if (typeof age !== "number") {
+        return "Age must be a number";
+    }
+
+    if (age < 18) {
+        return "You must be 18 or older";
+    }
+
+    if (age > 120) {
+        return "Please enter a valid age";
+    }
+
+    return "Age is valid";
 }
 
-console.log(validateAge(25));    // "Age is valid"
-console.log(validateAge(15));    // "You must be 18 or older"
-console.log(validateAge("20"));  // "Age must be a number"
-Bonus note: Functions are also objects in JS! typeof greet === 'function', but greet instanceof Object === true. Functions have properties like .name (the function's name) and .length (number of parameters), because under the hood, a function is just a special, callable object.
+console.log(validateAge(25));
+console.log(validateAge(15));
+console.log(validateAge("20"));
 
+Output:
+
+Age is valid
+You must be 18 or older
+Age must be a number
+7. Functions Are Also Objects
+
+Functions are special objects in JavaScript.
+
+function greet() {}
+
+console.log(typeof greet);
+
+Output:
+
+function
+
+Functions also have properties:
+
+console.log(greet.name);
+console.log(greet.length);
+
+Functions are objects because:
+
+console.log(greet instanceof Object);
+
+Output:
+
+true
+Conclusion
+
+Functions are reusable blocks of code that improve organization and reduce repetition. Function declarations are hoisted, can accept parameters and arguments, and return values. In JavaScript, functions are also objects with their own properties and methods.
